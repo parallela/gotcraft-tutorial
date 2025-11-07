@@ -11,9 +11,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Handles the /guideadmin command for administrators.
@@ -32,7 +30,7 @@ public class GuideAdminCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!sender.hasPermission(PERMISSION)) {
-            sender.sendMessage(Component.text("§cYou don't have permission to use this command!"));
+            sender.sendMessage(Component.text(configManager.getMessage("command-no-permission")));
             return true;
         }
 
@@ -68,7 +66,7 @@ public class GuideAdminCommand implements CommandExecutor, TabCompleter {
 
     private boolean handleSetPoint(CommandSender sender, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("§cThis subcommand can only be used by players!"));
+            sender.sendMessage(Component.text(configManager.getMessage("command-player-only")));
             return true;
         }
 
@@ -81,17 +79,19 @@ public class GuideAdminCommand implements CommandExecutor, TabCompleter {
             int pointNumber = Integer.parseInt(args[1]);
 
             if (pointNumber < 0) {
-                sender.sendMessage(Component.text("§cPoint number must be positive!"));
+                sender.sendMessage(Component.text(configManager.getMessage("admin-point-invalid")));
                 return true;
             }
 
             configManager.setTutorialPoint(pointNumber, player.getLocation());
             tutorialManager.loadTutorialSteps(); // Reload steps
 
-            sender.sendMessage(Component.text("§aSet tutorial point " + pointNumber + " at your current location!"));
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("number", String.valueOf(pointNumber));
+            sender.sendMessage(Component.text(configManager.getMessage("admin-point-set", placeholders)));
             return true;
         } catch (NumberFormatException e) {
-            sender.sendMessage(Component.text("§cInvalid number: " + args[1]));
+            sender.sendMessage(Component.text(configManager.getMessage("admin-invalid-number")));
             return true;
         }
     }
@@ -105,31 +105,39 @@ public class GuideAdminCommand implements CommandExecutor, TabCompleter {
         String title = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
         configManager.setTutorialTitle(title);
 
-        sender.sendMessage(Component.text("§aSet tutorial title to: " + title.replace("&", "§")));
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("title", title.replace("&", "§"));
+        sender.sendMessage(Component.text(configManager.getMessage("admin-title-set", placeholders)));
         return true;
     }
 
     private boolean handleSetMotd(CommandSender sender, String[] args) {
-        if (args.length < 3) {
-            sender.sendMessage(Component.text("§cUsage: /guideadmin setmotd <line number> <text>"));
+        if (args.length < 4) {
+            sender.sendMessage(Component.text("§cUsage: /guideadmin setmotd <point number> <line number> <text>"));
             return true;
         }
 
         try {
-            int lineNumber = Integer.parseInt(args[1]);
+            int pointNumber = Integer.parseInt(args[1]);
+            int lineNumber = Integer.parseInt(args[2]);
 
-            if (lineNumber < 0) {
-                sender.sendMessage(Component.text("§cLine number must be positive!"));
+            if (pointNumber < 0 || lineNumber < 0) {
+                sender.sendMessage(Component.text(configManager.getMessage("admin-point-invalid")));
                 return true;
             }
 
-            String text = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
-            configManager.setMotdLine(lineNumber, text);
+            String text = String.join(" ", Arrays.copyOfRange(args, 3, args.length));
+            configManager.setMotdLine(pointNumber, lineNumber, text);
+            tutorialManager.loadTutorialSteps(); // Reload steps
 
-            sender.sendMessage(Component.text("§aSet MOTD line " + lineNumber + " to: " + text.replace("&", "§")));
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("point", String.valueOf(pointNumber));
+            placeholders.put("line", String.valueOf(lineNumber));
+            placeholders.put("text", text.replace("&", "§"));
+            sender.sendMessage(Component.text(configManager.getMessage("admin-motd-set", placeholders)));
             return true;
         } catch (NumberFormatException e) {
-            sender.sendMessage(Component.text("§cInvalid line number: " + args[1]));
+            sender.sendMessage(Component.text(configManager.getMessage("admin-invalid-number")));
             return true;
         }
     }
@@ -137,33 +145,31 @@ public class GuideAdminCommand implements CommandExecutor, TabCompleter {
     private boolean handleReload(CommandSender sender) {
         configManager.loadConfig();
         tutorialManager.loadTutorialSteps();
-        sender.sendMessage(Component.text("§aConfiguration reloaded!"));
+        sender.sendMessage(Component.text(configManager.getMessage("admin-config-reloaded")));
         return true;
     }
 
     private boolean handleInfo(CommandSender sender) {
-        sender.sendMessage(Component.text("§7§m--------------------"));
-        sender.sendMessage(Component.text("§6§lTutorial Configuration Info"));
-        sender.sendMessage(Component.text("§7Title: §f" + configManager.getTutorialTitle().replace("&", "§")));
-        sender.sendMessage(Component.text("§7Tutorial Points: §f" + tutorialManager.getStepCount()));
-        sender.sendMessage(Component.text("§7MOTD Lines: §f" + configManager.getMotdLines().size()));
-        sender.sendMessage(Component.text("§7Step Delay: §f" + configManager.getStepDelay() + " ticks"));
-        sender.sendMessage(Component.text("§7Cooldown: §f" + configManager.getCooldown() + " seconds"));
-        sender.sendMessage(Component.text("§7Freeze Players: §f" + configManager.shouldFreezePlayers()));
-        sender.sendMessage(Component.text("§7Block Commands: §f" + configManager.shouldBlockCommands()));
-        sender.sendMessage(Component.text("§7§m--------------------"));
+        List<String> infoLines = configManager.getInfoMenu(
+            tutorialManager.getStepCount(),
+            configManager.getMotdLines().size(),
+            configManager.getStepDelay(),
+            configManager.getCooldown(),
+            configManager.shouldFreezePlayers(),
+            configManager.shouldBlockCommands()
+        );
+
+        for (String line : infoLines) {
+            sender.sendMessage(Component.text(line));
+        }
         return true;
     }
 
     private void sendHelp(CommandSender sender, String label) {
-        sender.sendMessage(Component.text("§7§m--------------------"));
-        sender.sendMessage(Component.text("§6§lGuide Admin Commands"));
-        sender.sendMessage(Component.text("§e/" + label + " setpoint <number> §7- Set a tutorial point"));
-        sender.sendMessage(Component.text("§e/" + label + " settitle <title> §7- Set the tutorial title"));
-        sender.sendMessage(Component.text("§e/" + label + " setmotd <line> <text> §7- Set a MOTD line"));
-        sender.sendMessage(Component.text("§e/" + label + " reload §7- Reload configuration"));
-        sender.sendMessage(Component.text("§e/" + label + " info §7- Show configuration info"));
-        sender.sendMessage(Component.text("§7§m--------------------"));
+        List<String> helpLines = configManager.getHelpMenu();
+        for (String line : helpLines) {
+            sender.sendMessage(Component.text(line));
+        }
     }
 
     @Nullable
@@ -178,12 +184,16 @@ public class GuideAdminCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             completions.addAll(Arrays.asList("setpoint", "settitle", "setmotd", "reload", "info"));
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("setpoint") || args[0].equalsIgnoreCase("setmotd")) {
+            if (args[0].equalsIgnoreCase("setpoint")) {
                 completions.add("<number>");
             } else if (args[0].equalsIgnoreCase("settitle")) {
                 completions.add("<title>");
+            } else if (args[0].equalsIgnoreCase("setmotd")) {
+                completions.add("<point>");
             }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("setmotd")) {
+            completions.add("<line>");
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("setmotd")) {
             completions.add("<text>");
         }
 

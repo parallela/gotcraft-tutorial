@@ -18,15 +18,17 @@ import java.util.List;
  */
 public class TutorialCommand implements CommandExecutor, TabCompleter {
     private final TutorialManager tutorialManager;
+    private final me.lubomirstankov.gotCraftTutorial.config.ConfigManager configManager;
 
-    public TutorialCommand(TutorialManager tutorialManager) {
+    public TutorialCommand(TutorialManager tutorialManager, me.lubomirstankov.gotCraftTutorial.config.ConfigManager configManager) {
         this.tutorialManager = tutorialManager;
+        this.configManager = configManager;
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("§cThis command can only be used by players!"));
+            sender.sendMessage(Component.text(configManager.getMessage("command-player-only")));
             return true;
         }
 

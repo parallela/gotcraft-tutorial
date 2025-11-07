@@ -5,19 +5,35 @@
 tutorial:
   # The main title displayed during the tutorial
   # Supports color codes using & (e.g., &6 for gold, &l for bold)
-  title: "&6&lWelcome to GotCraft"
+  # Use hex colors with &#RRGGBB format
+  title: "&b&lWelcome to GotCraft"
 
-  # Message of the Day lines displayed at each tutorial step
-  # Each line supports color codes
+  # Subtitle format (use {current} and {total} as placeholders)
+  subtitle: "&9Step {current} of {total}"
+
+  # Default Message of the Day lines (used if point-specific MOTD not set)
+  # Each line supports color codes using &
   motd:
-    - "&7Welcome to our server!"
-    - "&eFollow the tutorial to get started."
-    - "&aUse &f/tutorial stop &ato exit at any time."
+    - "&b&lWelcome to our server!"
+    - "&9Follow the tutorial to get started."
+    - "&3Use &f/tutorial stop &3to exit at any time."
 
   # Tutorial teleport points
   # Set these using /guideadmin setpoint <number>
-  # Format: world, x, y, z, yaw, pitch
+  # Each point can have its own MOTD using /guideadmin setmotd <point> <line> <text>
+  # Format per point: world, x, y, z, yaw, pitch, motd (optional)
   points: {}
+  #  Example:
+  #  0:
+  #    world: world
+  #    x: 0.0
+  #    y: 64.0
+  #    z: 0.0
+  #    yaw: 0.0
+  #    pitch: 0.0
+  #    motd:
+  #      - "&6Welcome to the spawn point!"
+  #      - "&7This is where your journey begins."
 
   # Delay between tutorial steps in ticks (20 ticks = 1 second)
   step-delay-ticks: 100
@@ -26,6 +42,56 @@ tutorial:
   cooldown-seconds: 300
 
   # Whether to freeze players during the tutorial (prevents manual movement)
+
+# All plugin messages (blue gradient theme)
+messages:
+  # Tutorial messages
+  tutorial-already-active: "&9You are already in a tutorial!"
+  tutorial-on-cooldown: "&9You must wait &b{time} &9seconds before starting another tutorial!"
+  tutorial-no-points: "&9No tutorial points have been configured yet!"
+  tutorial-starting: "&b✓ &9Starting tutorial... Use &b/tutorial stop &9to exit."
+  tutorial-not-active: "&9You are not in a tutorial!"
+  tutorial-stopped: "&b✓ &9Tutorial stopped."
+  tutorial-complete-title: "&b&l✔ Tutorial Complete!"
+  tutorial-complete-subtitle: "&9Thank you for completing the tutorial!"
+
+  # Command messages
+  command-player-only: "&9This command can only be used by players!"
+  command-no-permission: "&9You don't have permission to use this command!"
+  command-blocked: "&9You cannot use commands during the tutorial! Use &b/tutorial stop &9to exit."
+
+  # Admin messages
+  admin-point-set: "&b✓ &9Set tutorial point &b{number} &9at your current location!"
+  admin-point-invalid: "&9Point number must be positive!"
+  admin-title-set: "&b✓ &9Set tutorial title to: {title}"
+  admin-motd-set: "&b✓ &9Set MOTD for point &b{point}&9, line &b{line}&9 to: {text}"
+  admin-invalid-number: "&9Invalid number format!"
+  admin-config-reloaded: "&b✓ &9Configuration reloaded!"
+
+  # Help menu
+  help:
+    header: "&9&m━━━━━━━━━━━━━━━━━━━━&r &b&lGuide Admin &9&m━━━━━━━━━━━━━━━━━━━━"
+    setpoint: "&b/guideadmin setpoint <number> &9- Set a tutorial point"
+    settitle: "&b/guideadmin settitle <title> &9- Set the tutorial title"
+    setmotd: "&b/guideadmin setmotd <point> <line> <text> &9- Set MOTD for a point"
+    reload: "&b/guideadmin reload &9- Reload configuration"
+    info: "&b/guideadmin info &9- Show configuration info"
+    footer: "&9&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  # Info menu
+  info:
+    header: "&9&m━━━━━━━━━━━━━&r &b&lTutorial Configuration &9&m━━━━━━━━━━━━━"
+    title: "&9Title: &b{title}"
+    points: "&9Tutorial Points: &b{count}"
+    motd-lines: "&9Default MOTD Lines: &b{count}"
+    step-delay: "&9Step Delay: &b{ticks} ticks"
+    cooldown: "&9Cooldown: &b{seconds} seconds"
+    freeze-players: "&9Freeze Players: &b{value}"
+    block-commands: "&9Block Commands: &b{value}"
+    separator: ""
+    note: "&3Note: &9Each point can have its own MOTD"
+    usage: "&9Use &b/guideadmin setmotd <point> <line> <text>"
+    footer: "&9&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   freeze-players: true
 
   # Whether to block all commands except /tutorial during the tutorial

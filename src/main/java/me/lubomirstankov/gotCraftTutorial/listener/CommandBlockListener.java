@@ -39,7 +39,7 @@ public class CommandBlockListener implements Listener {
 
         // Block all other commands
         event.setCancelled(true);
-        event.getPlayer().sendMessage(Component.text("§cYou cannot use commands during the tutorial! Use /tutorial stop to exit."));
+        event.getPlayer().sendMessage(Component.text(configManager.getMessage("command-blocked")));
     }
 }
 

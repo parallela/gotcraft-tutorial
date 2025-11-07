@@ -2,6 +2,10 @@ package me.lubomirstankov.gotCraftTutorial.service;
 
 import me.lubomirstankov.gotCraftTutorial.GotCraftTutorial;
 import me.lubomirstankov.gotCraftTutorial.config.ConfigManager;
+import me.lubomirstankov.gotCraftTutorial.event.TutorialCompleteEvent;
+import me.lubomirstankov.gotCraftTutorial.event.TutorialStartEvent;
+import me.lubomirstankov.gotCraftTutorial.event.TutorialStepChangeEvent;
+import me.lubomirstankov.gotCraftTutorial.event.TutorialStopEvent;
 import me.lubomirstankov.gotCraftTutorial.model.TutorialSession;
 import me.lubomirstankov.gotCraftTutorial.model.TutorialStep;
 import net.kyori.adventure.text.Component;
@@ -47,7 +51,8 @@ public class TutorialManager {
         Collections.sort(sortedKeys);
 
         for (Integer stepNumber : sortedKeys) {
-            tutorialSteps.add(new TutorialStep(stepNumber, points.get(stepNumber)));
+            List<String> motdLines = configManager.getMotdLinesForPoint(stepNumber);
+            tutorialSteps.add(new TutorialStep(stepNumber, points.get(stepNumber), motdLines));
         }
     }
 
@@ -93,25 +98,38 @@ public class TutorialManager {
      */
     public boolean startTutorial(Player player) {
         if (hasActiveSession(player)) {
-            player.sendMessage(Component.text("§cYou are already in a tutorial!"));
+            player.sendMessage(Component.text(configManager.getMessage("tutorial-already-active")));
             return false;
         }
 
         if (isOnCooldown(player)) {
             long remaining = getRemainingCooldown(player);
-            player.sendMessage(Component.text("§cYou must wait " + remaining + " seconds before starting another tutorial!"));
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("time", String.valueOf(remaining));
+            player.sendMessage(Component.text(configManager.getMessage("tutorial-on-cooldown", placeholders)));
             return false;
         }
 
         if (tutorialSteps.isEmpty()) {
-            player.sendMessage(Component.text("§cNo tutorial points have been configured yet!"));
+            player.sendMessage(Component.text(configManager.getMessage("tutorial-no-points")));
+            return false;
+        }
+
+        // Fire TutorialStartEvent - allow other plugins to cancel
+        TutorialStartEvent startEvent = new TutorialStartEvent(player);
+        Bukkit.getPluginManager().callEvent(startEvent);
+
+        if (startEvent.isCancelled()) {
+            if (startEvent.getCancellationMessage() != null) {
+                player.sendMessage(Component.text(startEvent.getCancellationMessage()));
+            }
             return false;
         }
 
         TutorialSession session = new TutorialSession(player);
         activeSessions.put(player.getUniqueId(), session);
 
-        player.sendMessage(Component.text("§aStarting tutorial... Use /tutorial stop to exit."));
+        player.sendMessage(Component.text(configManager.getMessage("tutorial-starting")));
         showStep(session, 0);
 
         return true;
@@ -124,7 +142,7 @@ public class TutorialManager {
         TutorialSession session = activeSessions.remove(player.getUniqueId());
 
         if (session == null) {
-            player.sendMessage(Component.text("§cYou are not in a tutorial!"));
+            player.sendMessage(Component.text(configManager.getMessage("tutorial-not-active")));
             return false;
         }
 
@@ -134,11 +152,20 @@ public class TutorialManager {
             task.cancel();
         }
 
+        // Fire TutorialStopEvent
+        TutorialStopEvent stopEvent = new TutorialStopEvent(
+            player,
+            session.getStartTime(),
+            session.getCurrentStep(),
+            tutorialSteps.size()
+        );
+        Bukkit.getPluginManager().callEvent(stopEvent);
+
         // Set cooldown
         int cooldownSeconds = configManager.getCooldown();
         cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (cooldownSeconds * 1000L));
 
-        player.sendMessage(Component.text("§aTutorial stopped."));
+        player.sendMessage(Component.text(configManager.getMessage("tutorial-stopped")));
         player.clearTitle();
 
         return true;
@@ -160,15 +187,30 @@ public class TutorialManager {
             return;
         }
 
+        int previousStep = session.getCurrentStep();
         session.setCurrentStep(stepIndex);
         TutorialStep step = tutorialSteps.get(stepIndex);
+
+        // Fire TutorialStepChangeEvent
+        TutorialStepChangeEvent stepChangeEvent = new TutorialStepChangeEvent(
+            player,
+            previousStep,
+            stepIndex,
+            tutorialSteps.size(),
+            step.getLocation()
+        );
+        Bukkit.getPluginManager().callEvent(stepChangeEvent);
 
         // Teleport player
         player.teleport(step.getLocation());
 
         // Show title
         String titleText = configManager.getTutorialTitle();
-        String subtitle = "§7Step " + (stepIndex + 1) + " of " + tutorialSteps.size();
+        String subtitleFormat = configManager.getSubtitleFormat();
+        String subtitle = subtitleFormat
+            .replace("{current}", String.valueOf(stepIndex + 1))
+            .replace("{total}", String.valueOf(tutorialSteps.size()))
+            .replace("&", "§");
 
         Component titleComponent = Component.text(titleText.replace("&", "§")).decoration(TextDecoration.BOLD, true);
         Component subtitleComponent = Component.text(subtitle);
@@ -180,8 +222,8 @@ public class TutorialManager {
         );
         player.showTitle(title);
 
-        // Show MOTD
-        List<String> motdLines = configManager.getMotdLines();
+        // Show MOTD from step-specific configuration
+        List<String> motdLines = step.getMotdLines();
         if (!motdLines.isEmpty()) {
             player.sendMessage(Component.text("§7§m--------------------"));
             for (String line : motdLines) {
@@ -211,8 +253,16 @@ public class TutorialManager {
         activeSessions.remove(player.getUniqueId());
         activeTasks.remove(player.getUniqueId());
 
-        player.sendMessage(Component.text("§a§l✔ Tutorial Complete!"));
-        player.sendMessage(Component.text("§7Thank you for completing the tutorial!"));
+        // Fire TutorialCompleteEvent
+        TutorialCompleteEvent completeEvent = new TutorialCompleteEvent(
+            player,
+            session.getStartTime(),
+            tutorialSteps.size()
+        );
+        Bukkit.getPluginManager().callEvent(completeEvent);
+
+        player.sendMessage(Component.text(configManager.getMessage("tutorial-complete-title")));
+        player.sendMessage(Component.text(configManager.getMessage("tutorial-complete-subtitle")));
 
         // Set cooldown
         int cooldownSeconds = configManager.getCooldown();

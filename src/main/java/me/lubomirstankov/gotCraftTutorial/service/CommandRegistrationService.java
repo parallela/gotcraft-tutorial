@@ -25,7 +25,7 @@ public class CommandRegistrationService {
      */
     public void registerCommands() {
         // Register /tutorial and /guide commands
-        TutorialCommand tutorialCommand = new TutorialCommand(tutorialManager);
+        TutorialCommand tutorialCommand = new TutorialCommand(tutorialManager, configManager);
 
         PluginCommand tutorialCmd = plugin.getCommand("tutorial");
         if (tutorialCmd != null) {
