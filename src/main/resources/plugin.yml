@@ -1,0 +1,4 @@
+name: gotCraftTutorial
+version: '1.0-SNAPSHOT'
+main: me.lubomirstankov.gotCraftTutorial.GotCraftTutorial
+api-version: '1.21'

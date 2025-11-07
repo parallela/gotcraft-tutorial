@@ -1,0 +1,58 @@
+# GotCraftTutorial Configuration File
+#
+# Tutorial Settings
+
+tutorial:
+  # The main title displayed during the tutorial
+  # Supports color codes using & (e.g., &6 for gold, &l for bold)
+  title: "&6&lWelcome to GotCraft"
+
+  # Message of the Day lines displayed at each tutorial step
+  # Each line supports color codes
+  motd:
+    - "&7Welcome to our server!"
+    - "&eFollow the tutorial to get started."
+    - "&aUse &f/tutorial stop &ato exit at any time."
+
+  # Tutorial teleport points
+  # Set these using /guideadmin setpoint <number>
+  # Format: world, x, y, z, yaw, pitch
+  points: {}
+
+  # Delay between tutorial steps in ticks (20 ticks = 1 second)
+  step-delay-ticks: 100
+
+  # Cooldown before a player can start the tutorial again (in seconds)
+  cooldown-seconds: 300
+
+  # Whether to freeze players during the tutorial (prevents manual movement)
+  freeze-players: true
+
+  # Whether to block all commands except /tutorial during the tutorial
+  block-commands: true
+name: GotCraftTutorial
+
+
+api-version: '1.20'
+author: lubomirstankov
+description: A comprehensive tutorial system for Minecraft servers
+
+commands:
+  tutorial:
+    description: Start or stop the server tutorial
+    usage: /<command> [stop]
+    aliases: [guide]
+
+  guide:
+    description: Alias for /tutorial command
+    usage: /<command> [stop]
+
+  guideadmin:
+    description: Admin commands for managing the tutorial system
+    usage: /<command> <setpoint|settitle|setmotd|reload|info> [args...]
+    permission: gotcrafttutorial.admin
+
+permissions:
+  gotcrafttutorial.admin:
+    description: Allows access to tutorial admin commands
+    default: op
