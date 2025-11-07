@@ -281,6 +281,20 @@ public class TutorialManager {
         player.sendMessage(Component.text(configManager.getMessage("tutorial-complete-title")));
         player.sendMessage(Component.text(configManager.getMessage("tutorial-complete-subtitle")));
 
+        // Execute completion commands
+        List<String> completionCommands = configManager.getCompletionCommands();
+        if (!completionCommands.isEmpty()) {
+            for (String command : completionCommands) {
+                // Replace {player} placeholder with actual player name
+                String processedCommand = command.replace("{player}", player.getName());
+
+                // Execute command from console
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
+                });
+            }
+        }
+
         // Set cooldown
         int cooldownSeconds = configManager.getCooldown();
         cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (cooldownSeconds * 1000L));

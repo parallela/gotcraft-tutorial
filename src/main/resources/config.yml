@@ -42,6 +42,18 @@ tutorial:
   cooldown-seconds: 300
 
   # Whether to freeze players during the tutorial (prevents manual movement)
+  freeze-players: true
+
+  # Whether to block all commands except /tutorial during the tutorial
+  block-commands: true
+
+  # Commands to execute when player completes the tutorial
+  # Use {player} as placeholder for player name
+  # Commands are executed from console (no / needed)
+  completion-commands:
+    - "give {player} diamond 5"
+    - "eco give {player} 1000"
+    - "broadcast &b{player} &ahas completed the tutorial!"
 
 # All plugin messages (blue gradient theme)
 messages:

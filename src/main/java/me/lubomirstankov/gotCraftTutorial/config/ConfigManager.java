@@ -181,6 +181,14 @@ public class ConfigManager {
     }
 
     /**
+     * Gets the list of commands to execute on tutorial completion.
+     * @return List of commands with {player} placeholder
+     */
+    public List<String> getCompletionCommands() {
+        return config.getStringList("tutorial.completion-commands");
+    }
+
+    /**
      * Gets a message from config with color code support.
      */
     public String getMessage(String key) {
@@ -225,6 +233,11 @@ public class ConfigManager {
      */
     public List<String> getInfoMenu(int pointCount, int motdCount, long stepDelay, int cooldown, boolean freeze, boolean blockCmd) {
         List<String> menu = new ArrayList<>();
+
+        // Add completion commands info
+        List<String> completionCmds = getCompletionCommands();
+        menu.add("&3Completion Commands: &b" + completionCmds.size());
+
         menu.add(getMessage("info.header"));
         menu.add(getMessage("info.title").replace("{title}", getTutorialTitle().replace("&", "§")));
         menu.add(getMessage("info.points").replace("{count}", String.valueOf(pointCount)));
