@@ -243,13 +243,12 @@ public class TutorialManager {
         // Show MOTD from step-specific configuration
         List<String> motdLines = step.getMotdLines();
         if (!motdLines.isEmpty()) {
-            player.sendMessage(Component.text("§7§m--------------------"));
+            // Hello MARU
             for (String line : motdLines) {
                 if (line != null && !line.isEmpty()) {
                     player.sendMessage(Component.text(line.replace("&", "§")));
                 }
             }
-            player.sendMessage(Component.text("§7§m--------------------"));
         }
 
         // Schedule next step
