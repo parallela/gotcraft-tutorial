@@ -204,23 +204,41 @@ public class TutorialManager {
         // Teleport player
         player.teleport(step.getLocation());
 
-        // Show title
-        String titleText = configManager.getTutorialTitle();
-        String subtitleFormat = configManager.getSubtitleFormat();
-        String subtitle = subtitleFormat
-            .replace("{current}", String.valueOf(stepIndex + 1))
-            .replace("{total}", String.valueOf(tutorialSteps.size()))
-            .replace("&", "§");
+        // Show title only on first step
+        if (stepIndex == 0) {
+            String titleText = configManager.getTutorialTitle();
+            String subtitleFormat = configManager.getSubtitleFormat();
+            String subtitle = subtitleFormat
+                .replace("{current}", String.valueOf(stepIndex + 1))
+                .replace("{total}", String.valueOf(tutorialSteps.size()))
+                .replace("&", "§");
 
-        Component titleComponent = Component.text(titleText.replace("&", "§")).decoration(TextDecoration.BOLD, true);
-        Component subtitleComponent = Component.text(subtitle);
+            Component titleComponent = Component.text(titleText.replace("&", "§")).decoration(TextDecoration.BOLD, true);
+            Component subtitleComponent = Component.text(subtitle);
 
-        Title title = Title.title(
-            titleComponent,
-            subtitleComponent,
-            Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(500))
-        );
-        player.showTitle(title);
+            Title title = Title.title(
+                titleComponent,
+                subtitleComponent,
+                Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(500))
+            );
+            player.showTitle(title);
+        } else {
+            // Show only subtitle for subsequent steps
+            String subtitleFormat = configManager.getSubtitleFormat();
+            String subtitle = subtitleFormat
+                .replace("{current}", String.valueOf(stepIndex + 1))
+                .replace("{total}", String.valueOf(tutorialSteps.size()))
+                .replace("&", "§");
+
+            Component subtitleComponent = Component.text(subtitle);
+
+            Title title = Title.title(
+                Component.empty(),
+                subtitleComponent,
+                Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofMillis(500))
+            );
+            player.showTitle(title);
+        }
 
         // Show MOTD from step-specific configuration
         List<String> motdLines = step.getMotdLines();
