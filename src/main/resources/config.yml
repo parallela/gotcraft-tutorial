@@ -59,7 +59,7 @@ tutorial:
 messages:
   # Tutorial messages
   tutorial-already-active: "&9You are already in a tutorial!"
-  tutorial-on-cooldown: "&9You must wait &b{time} &9seconds before starting another tutorial!"
+  tutorial-on-cooldown: "&9You must wait &b{time} &9before starting another tutorial!"
   tutorial-no-points: "&9No tutorial points have been configured yet!"
   tutorial-starting: "&b✓ &9Starting tutorial... Use &b/tutorial stop &9to exit."
   tutorial-not-active: "&9You are not in a tutorial!"

@@ -105,7 +105,7 @@ public class TutorialManager {
         if (isOnCooldown(player)) {
             long remaining = getRemainingCooldown(player);
             Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("time", String.valueOf(remaining));
+            placeholders.put("time", configManager.formatTime(remaining));
             player.sendMessage(Component.text(configManager.getMessage("tutorial-on-cooldown", placeholders)));
             return false;
         }

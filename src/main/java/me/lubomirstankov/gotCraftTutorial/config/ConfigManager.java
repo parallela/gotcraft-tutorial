@@ -189,6 +189,50 @@ public class ConfigManager {
     }
 
     /**
+     * Formats seconds into a human-readable time string.
+     * Supports weeks, days, hours, minutes, and seconds.
+     * @param seconds Total seconds to format
+     * @return Formatted time string (e.g., "1w 2d 3h 4m 5s" or "45s")
+     */
+    public String formatTime(long seconds) {
+        if (seconds <= 0) {
+            return "0s";
+        }
+
+        long weeks = seconds / 604800;
+        seconds %= 604800;
+
+        long days = seconds / 86400;
+        seconds %= 86400;
+
+        long hours = seconds / 3600;
+        seconds %= 3600;
+
+        long minutes = seconds / 60;
+        seconds %= 60;
+
+        StringBuilder timeString = new StringBuilder();
+
+        if (weeks > 0) {
+            timeString.append(weeks).append("w ");
+        }
+        if (days > 0) {
+            timeString.append(days).append("d ");
+        }
+        if (hours > 0) {
+            timeString.append(hours).append("h ");
+        }
+        if (minutes > 0) {
+            timeString.append(minutes).append("m ");
+        }
+        if (seconds > 0 || timeString.isEmpty()) {
+            timeString.append(seconds).append("s");
+        }
+
+        return timeString.toString().trim();
+    }
+
+    /**
      * Gets a message from config with color code support.
      */
     public String getMessage(String key) {

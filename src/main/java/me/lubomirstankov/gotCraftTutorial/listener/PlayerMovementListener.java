@@ -4,7 +4,6 @@ import me.lubomirstankov.gotCraftTutorial.config.ConfigManager;
 import me.lubomirstankov.gotCraftTutorial.service.TutorialManager;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
@@ -20,7 +19,7 @@ public class PlayerMovementListener implements Listener {
         this.configManager = configManager;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         // Check if freeze is enabled in config
         if (!configManager.shouldFreezePlayers()) {
