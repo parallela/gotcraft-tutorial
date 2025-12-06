@@ -21,7 +21,7 @@ public final class GotCraftTutorial extends JavaPlugin {
     public void onEnable() {
         // Initialize services
         initializeServices();
-
+        //Maro has been here
         // Register commands and listeners
         commandRegistrationService.registerCommands();
         listenerRegistrationService.registerListeners();
