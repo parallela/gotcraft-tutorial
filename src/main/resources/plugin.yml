@@ -1,7 +1,7 @@
 name: GotCraftTutorial
 version: '1.0-SNAPSHOT'
 main: me.lubomirstankov.gotCraftTutorial.GotCraftTutorial
-api-version: '1.20'
+api-version: '1.21'
 author: lubomirstankov
 description: A comprehensive tutorial system for Minecraft servers
 

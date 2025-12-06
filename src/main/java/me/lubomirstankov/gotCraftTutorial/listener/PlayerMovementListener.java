@@ -4,6 +4,7 @@ import me.lubomirstankov.gotCraftTutorial.config.ConfigManager;
 import me.lubomirstankov.gotCraftTutorial.service.TutorialManager;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
@@ -19,12 +20,14 @@ public class PlayerMovementListener implements Listener {
         this.configManager = configManager;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
+        // Check if freeze is enabled in config
         if (!configManager.shouldFreezePlayers()) {
             return;
         }
 
+        // Check if player has active tutorial session
         if (!tutorialManager.hasActiveSession(event.getPlayer())) {
             return;
         }
@@ -37,12 +40,18 @@ public class PlayerMovementListener implements Listener {
             return;
         }
 
+        // Check if X, Y, or Z coordinates changed (actual movement)
         if (from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()) {
-            // Cancel movement but allow head rotation
-            Location newLoc = from.clone();
-            newLoc.setYaw(to.getYaw());
-            newLoc.setPitch(to.getPitch());
-            event.setTo(newLoc);
+            // Create new location that keeps player in place but allows head rotation
+            Location frozenLocation = from.clone();
+            frozenLocation.setYaw(to.getYaw());
+            frozenLocation.setPitch(to.getPitch());
+
+            // Cancel the movement event
+            event.setCancelled(true);
+
+            // Teleport player back to frozen position with updated view direction
+            event.getPlayer().teleport(frozenLocation);
         }
     }
 }
